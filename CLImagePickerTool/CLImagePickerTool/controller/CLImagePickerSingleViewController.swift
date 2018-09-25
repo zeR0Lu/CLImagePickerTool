@@ -464,24 +464,26 @@ extension CLImagePickerSingleViewController: UICollectionViewDelegate,UICollecti
     }
     
     func isCameraAvailable() -> Bool{
-        return UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.camera)
+        return UIImagePickerController.isSourceTypeAvailable(UIImagePickerController.SourceType.camera)
     }
 
 }
 
 extension CLImagePickerSingleViewController:UIImagePickerControllerDelegate,UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+    
+    private func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         self.dismiss(animated: true) {}
         
         PopViewUtil.share.showLoading()
-
+        
+        
         // 保存到相册
-        let type = info[UIImagePickerControllerMediaType] as? String
+        let type = info[UIImagePickerController.InfoKey.mediaType] as? String
         if type == "public.image" {
             CLPickersTools.instence.authorizeSave { (state) in
                 if state == .authorized {
-                    let photo = info[UIImagePickerControllerOriginalImage]
+                    let photo = info[UIImagePickerController.InfoKey.originalImage]
                     UIImageWriteToSavedPhotosAlbum(photo as! UIImage, self, #selector(CLImagePickerSingleViewController.image(_:didFinishSavingWithError:contextInfo:)), nil)
                 } else {
                     DispatchQueue.main.async(execute: {
@@ -490,7 +492,7 @@ extension CLImagePickerSingleViewController:UIImagePickerControllerDelegate,UINa
                             PopViewUtil.share.stopLoading()
                             picker.dismiss(animated: true, completion: nil)
                         }, rightHandler: {
-                            let url = URL(string: UIApplicationOpenSettingsURLString)
+                            let url = URL(string: UIApplication.openSettingsURLString)
                             if let url = url, UIApplication.shared.canOpenURL(url) {
                                 if #available(iOS 10, *) {
                                     UIApplication.shared.open(url, options: [:],
@@ -507,6 +509,44 @@ extension CLImagePickerSingleViewController:UIImagePickerControllerDelegate,UINa
             }
         }
     }
+    
+//    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+//
+//        self.dismiss(animated: true) {}
+//
+//        PopViewUtil.share.showLoading()
+//
+//        // 保存到相册
+//        let type = info[UIImagePickerControllerMediaType] as? String
+//        if type == "public.image" {
+//            CLPickersTools.instence.authorizeSave { (state) in
+//                if state == .authorized {
+//                    let photo = info[UIImagePickerControllerOriginalImage]
+//                    UIImageWriteToSavedPhotosAlbum(photo as! UIImage, self, #selector(CLImagePickerSingleViewController.image(_:didFinishSavingWithError:contextInfo:)), nil)
+//                } else {
+//                    DispatchQueue.main.async(execute: {
+//                        PopViewUtil.alert(title: photoLimitStr, message: clickSetStr, leftTitle: cancelStr, rightTitle: setStr, leftHandler: {
+//                            // 点击了取消
+//                            PopViewUtil.share.stopLoading()
+//                            picker.dismiss(animated: true, completion: nil)
+//                        }, rightHandler: {
+//                            let url = URL(string: UIApplicationOpenSettingsURLString)
+//                            if let url = url, UIApplication.shared.canOpenURL(url) {
+//                                if #available(iOS 10, *) {
+//                                    UIApplication.shared.open(url, options: [:],
+//                                                              completionHandler: {
+//                                                                (success) in
+//                                    })
+//                                } else {
+//                                    UIApplication.shared.openURL(url)
+//                                }
+//                            }
+//                        })
+//                    })
+//                }
+//            }
+//        }
+//    }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         self.dismiss(animated: true, completion: nil)
     }
